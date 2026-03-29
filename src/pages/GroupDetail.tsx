@@ -64,13 +64,12 @@ export default function GroupDetail() {
 
   const loadSlots = useCallback(async () => {
     if (!id) return; setSlotsLoading(true);
-    const { data } = await supabase.from("slots").select("*, profiles(first_name, nickname, is_vip, profile_picture)").eq("group_id", id).order("seat_no");
+    const { data } = await supabase.from("slots").select("*").eq("group_id", id).order("seat_no");
     if (data) {
       const mapped: Slot[] = data.map((s: Record<string, unknown>) => {
-        const profile = s.profiles as Record<string, unknown> | null;
         let status: Slot["status"] = s.status as Slot["status"];
         if (s.user_id === currentUser?.id && (status === "claimed" || status === "reserved")) status = "mine" as unknown as Slot["status"];
-        return { id: s.id as number, groupId: s.group_id as string, seatNo: s.seat_no as number, userId: s.user_id as string | undefined, status, isDisbursed: Boolean(s.is_disbursed), nickname: profile?.nickname as string | undefined, fullName: profile?.first_name as string | undefined, isVip: Boolean(profile?.is_vip), profilePicture: profile?.profile_picture as string | undefined };
+        return { id: s.id as number, groupId: s.group_id as string, seatNo: s.seat_no as number, userId: s.user_id as string | undefined, status, isDisbursed: Boolean(s.is_disbursed), nickname: s.nickname as string | undefined, fullName: s.full_name as string | undefined, isVip: Boolean(s.is_vip), profilePicture: s.profile_picture as string | undefined };
       });
       setSlots(mapped);
     }
