@@ -79,6 +79,41 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_messages: {
+        Row: {
+          created_at: string
+          group_id: string
+          id: string
+          text: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          group_id: string
+          id?: string
+          text: string
+          user_id: string
+          username?: string
+        }
+        Update: {
+          created_at?: string
+          group_id?: string
+          id?: string
+          text?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contact_info: {
         Row: {
           call_number: string | null
@@ -271,6 +306,30 @@ export type Database = {
           terms_text?: string | null
           total_slots?: number
           updated_at?: string
+        }
+        Relationships: []
+      }
+      guide_tips: {
+        Row: {
+          body: string
+          category: string | null
+          created_at: string
+          id: string
+          title: string
+        }
+        Insert: {
+          body: string
+          category?: string | null
+          created_at?: string
+          id?: string
+          title: string
+        }
+        Update: {
+          body?: string
+          category?: string | null
+          created_at?: string
+          id?: string
+          title?: string
         }
         Relationships: []
       }
@@ -718,6 +777,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_and_mark_defaulters: { Args: never; Returns: undefined }
       get_leaderboard: {
         Args: never
         Returns: {
@@ -741,6 +801,14 @@ export type Database = {
       }
       send_notification_to_all: {
         Args: { p_message: string }
+        Returns: undefined
+      }
+      send_notification_to_group: {
+        Args: { p_group_id: string; p_message: string }
+        Returns: undefined
+      }
+      send_notification_to_user: {
+        Args: { p_message: string; p_user_id: string }
         Returns: undefined
       }
     }
