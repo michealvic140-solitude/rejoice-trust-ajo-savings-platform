@@ -343,6 +343,9 @@ export default function Admin() {
       for (const sn of seatNums) {
         await supabase.from("slots").update({ user_id: null, status: "available" as const, joined_at: null }).eq("group_id", groupId).eq("seat_no", sn).eq("user_id", userId);
       }
+      // Update filled_slots count
+      const { data: slotCount } = await supabase.from("slots").select("id").eq("group_id", groupId).neq("status", "available");
+      await supabase.from("groups").update({ filled_slots: slotCount?.length || 0 }).eq("id", groupId);
     }
     await supabase.rpc("send_notification_to_user", { p_user_id: userId, p_message: `Your payment for ${groupName} was declined.${reason ? ` Reason: ${reason}` : ""} Your seats are now available again.` });
     await supabase.from("audit_logs").insert({ admin_id: currentUser!.id, admin_name: currentUser!.username, user_id: userId, action: `Declined payment ${txId}. Reason: ${reason || "N/A"}`, type: "payment" });
