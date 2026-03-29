@@ -45,9 +45,9 @@ export default function GuideTips() {
       if (up) { const { data: u } = supabase.storage.from("announcements").getPublicUrl(up.path); imageUrl = u.publicUrl; }
     }
     if (editingTip) {
-      await supabase.from("guide_tips").update({ title: tipTitle, content: tipContent,  ...(imageUrl ? { image_url: imageUrl } : {}) }).eq("id", editingTip);
+      await supabase.from("guide_tips").update({ title: tipTitle, content: tipContent, ...(imageUrl ? { image_url: imageUrl } : {}) } as any).eq("id", editingTip);
     } else {
-      await supabase.from("guide_tips").insert({ title: tipTitle, content: tipContent,  image_url: imageUrl || null });
+      await supabase.from("guide_tips").insert([{ title: tipTitle, content: tipContent, image_url: imageUrl || null }] as any);
     }
     setShowForm(false); setEditingTip(null); setTipTitle(""); setTipContent(""); setTipFile(null); setTipOrder(0);
     await loadTips();

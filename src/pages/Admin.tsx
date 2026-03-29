@@ -176,9 +176,9 @@ export default function Admin() {
       const { data } = await supabase.from("groups").insert(payload).select().single();
       if (data) {
         const numSlots = parseInt(gSlots) || 100;
-        const slots = Array.from({ length: numSlots }, (_, i) => ({ group_id: (data as Record<string,unknown>).id as string, seat_no: i+1, status:"available" }));
+        const slots = Array.from({ length: numSlots }, (_, i) => ({ group_id: (data as Record<string,unknown>).id as string, seat_no: i+1, status:"available" as const }));
         await supabase.from("slots").insert(slots);
-        await supabase.rpc("send_notification_to_all", { msg: `New group available: ${gName}! Join now and start saving.` });
+        await supabase.rpc("send_notification_to_all", { p_message: `New group available: ${gName}! Join now and start saving.` });
         await supabase.from("audit_logs").insert({ admin_id: currentUser!.id, admin_name: currentUser!.username, action: `Created group: ${gName} with ${numSlots} seats`, type: "group" });
       }
     }
@@ -191,7 +191,7 @@ export default function Admin() {
     const group = groups.find(g => g.id === groupId);
     if (!group) return;
     const currentMax = group.totalSlots;
-    const newSlots = Array.from({ length: count }, (_, i) => ({ group_id: groupId, seat_no: currentMax + i + 1, status: "available" }));
+    const newSlots = Array.from({ length: count }, (_, i) => ({ group_id: groupId, seat_no: currentMax + i + 1, status: "available" as const }));
     await supabase.from("slots").insert(newSlots);
     await supabase.from("groups").update({ total_slots: currentMax + count }).eq("id", groupId);
     await supabase.from("audit_logs").insert({ admin_id: currentUser!.id, admin_name: currentUser!.username, action: `Added ${count} seats to group: ${group.name}`, type: "group" });
@@ -202,7 +202,7 @@ export default function Admin() {
 
   const toggleGroupLive = async (groupId: string, isLive: boolean) => {
     await supabase.from("groups").update({ is_live: !isLive, live_at: !isLive ? new Date().toISOString() : null }).eq("id", groupId);
-    if (!isLive) await supabase.rpc("send_notification_to_group", { gid: groupId, msg: `Your group is now LIVE! Payment timer has started.` });
+    if (!isLive) await supabase.rpc("send_notification_to_group", { p_group_id: groupId, p_message: `Your group is now LIVE! Payment timer has started.` });
     await supabase.from("audit_logs").insert({ admin_id: currentUser!.id, admin_name: currentUser!.username, action: `${!isLive ? "Activated" : "Deactivated"} group`, type: "group" });
     await refreshGroups(); await loadData();
   };
@@ -218,8 +218,8 @@ export default function Admin() {
       if (up) { const { data: u } = supabase.storage.from("announcements").getPublicUrl(up.path); imageUrl = u.publicUrl; }
     }
     await supabase.from("announcements").insert({ title:annTitle, body:annBody, type:annType, image_url:imageUrl||null, target_group_id:annGroupId||null, admin_name:currentUser?.username||"Admin" });
-    if (!annGroupId) await supabase.rpc("send_notification_to_all", { msg: `📢 ${annTitle}: ${annBody}` });
-    else await supabase.rpc("send_notification_to_group", { gid: annGroupId, msg: `📢 ${annTitle}: ${annBody}` });
+    if (!annGroupId) await supabase.rpc("send_notification_to_all", { p_message: `📢 ${annTitle}: ${annBody}` });
+    else await supabase.rpc("send_notification_to_group", { p_group_id: annGroupId, p_message: `📢 ${annTitle}: ${annBody}` });
     await refreshAnnouncements(); setShowAnnouncement(false); setAnnTitle(""); setAnnBody(""); setAnnFile(null); setAnnGroupId("");
   };
 
@@ -227,16 +227,16 @@ export default function Admin() {
 
   const sendNotification = async () => {
     if (!notifMsg) return;
-    if (notifTarget === "all") await supabase.rpc("send_notification_to_all", { msg: notifMsg });
-    else if (notifTarget === "user" && notifUserId) await supabase.rpc("send_notification_to_user", { uid: notifUserId, msg: notifMsg });
-    else if (notifTarget === "vip") { const vips = adminUsers.filter(u => u.is_vip); for (const u of vips) await supabase.rpc("send_notification_to_user", { uid: u.id as string, msg: notifMsg }); }
+    if (notifTarget === "all") await supabase.rpc("send_notification_to_all", { p_message: notifMsg });
+    else if (notifTarget === "user" && notifUserId) await supabase.rpc("send_notification_to_user", { p_user_id: notifUserId, p_message: notifMsg });
+    else if (notifTarget === "vip") { const vips = adminUsers.filter(u => u.is_vip); for (const u of vips) await supabase.rpc("send_notification_to_user", { p_user_id: u.id as string, p_message: notifMsg }); }
     setNotifMsg(""); setNotifUserId(""); alert("Notification sent!");
   };
 
   const banUser = async (userId: string) => {
     if (!banReason.trim()) { alert("Please provide a ban reason."); return; }
     await supabase.from("profiles").update({ is_banned: true }).eq("id", userId);
-    await supabase.rpc("send_notification_to_user", { uid: userId, msg: `Your account has been banned. Reason: ${banReason}. Contact admin to appeal.` });
+    await supabase.rpc("send_notification_to_user", { p_user_id: userId, p_message: `Your account has been banned. Reason: ${banReason}. Contact admin to appeal.` });
     await supabase.from("audit_logs").insert({ admin_id: currentUser!.id, admin_name: currentUser!.username, user_id: userId, action: `Banned user. Reason: ${banReason}`, type: "moderation" });
     setShowBanModal(null); setBanReason(""); await loadData();
   };
@@ -244,7 +244,7 @@ export default function Admin() {
   const restrictUser = async (userId: string) => {
     if (!restrictReason.trim()) { alert("Please provide a restriction reason."); return; }
     await supabase.from("profiles").update({ is_restricted: true, is_frozen: true }).eq("id", userId);
-    await supabase.rpc("send_notification_to_user", { uid: userId, msg: `Your account has been restricted/frozen. Reason: ${restrictReason}. You cannot view or join groups. Contact admin.` });
+    await supabase.rpc("send_notification_to_user", { p_user_id: userId, p_message: `Your account has been restricted/frozen. Reason: ${restrictReason}. You cannot view or join groups. Contact admin.` });
     await supabase.from("audit_logs").insert({ admin_id: currentUser!.id, admin_name: currentUser!.username, user_id: userId, action: `Restricted/Froze user. Reason: ${restrictReason}`, type: "moderation" });
     setShowRestrictModal(null); setRestrictReason(""); await loadData();
   };
@@ -253,9 +253,9 @@ export default function Admin() {
     await supabase.from("profiles").update({ [field]: value }).eq("id", userId);
     await supabase.from("audit_logs").insert({ admin_id: currentUser!.id, admin_name: currentUser!.username, user_id: userId, action: `Set ${field} = ${value}`, type: "moderation" });
     await loadData();
-    if (field === "is_banned" && !value) await supabase.rpc("send_notification_to_user", { uid: userId, msg: "Your account has been unbanned. Welcome back!" });
-    if (field === "is_restricted" && !value) await supabase.rpc("send_notification_to_user", { uid: userId, msg: "Your account restriction has been lifted." });
-    if (field === "is_frozen" && !value) await supabase.rpc("send_notification_to_user", { uid: userId, msg: "Your account has been unfrozen." });
+    if (field === "is_banned" && !value) await supabase.rpc("send_notification_to_user", { p_user_id: userId, p_message: "Your account has been unbanned. Welcome back!" });
+    if (field === "is_restricted" && !value) await supabase.rpc("send_notification_to_user", { p_user_id: userId, p_message: "Your account restriction has been lifted." });
+    if (field === "is_frozen" && !value) await supabase.rpc("send_notification_to_user", { p_user_id: userId, p_message: "Your account has been unfrozen." });
   };
 
   const saveUserEdit = async () => {
@@ -284,7 +284,7 @@ export default function Admin() {
 
     await supabase.from("profiles").update(updates).eq("id", showUserEdit);
     await supabase.from("audit_logs").insert({ admin_id: currentUser!.id, admin_name: currentUser!.username, user_id: showUserEdit, action: `Edited user profile`, type: "moderation" });
-    if (editedUser.role === "admin") await supabase.rpc("send_notification_to_user", { uid: showUserEdit, msg: "You have been granted Admin role on the platform." });
+    if (editedUser.role === "admin") await supabase.rpc("send_notification_to_user", { p_user_id: showUserEdit, p_message: "You have been granted Admin role on the platform." });
     setShowUserEdit(null); await loadData();
   };
 
@@ -299,7 +299,7 @@ export default function Admin() {
     const ticket = supportTickets.find(t => t.id === ticketId);
     await supabase.from("ticket_replies").insert({ ticket_id: ticketId, user_id: currentUser!.id, message: supportReplyText, attachment_url: attachmentUrl||null, is_admin: true });
     await supabase.from("support_tickets").update({ admin_reply: supportReplyText, admin_reply_attachment: attachmentUrl||null, status: "replied", replied_at: new Date().toISOString() }).eq("id", ticketId);
-    if (ticket) await supabase.rpc("send_notification_to_user", { uid: ticket.userId, msg: `Admin replied to your support ticket: "${ticket.subject}"` });
+    if (ticket) await supabase.rpc("send_notification_to_user", { p_user_id: ticket.userId, p_message: `Admin replied to your support ticket: "${ticket.subject}"` });
     await refreshSupportTickets(); setSupportReplyText(""); setSupportReplyFile(null);
     if (openTicketId === ticketId) loadTicketReplies(ticketId);
   };
@@ -307,7 +307,7 @@ export default function Admin() {
   const updateTicketStatus = async (ticketId: string, newStatus: string) => {
     await supabase.from("support_tickets").update({ status: newStatus }).eq("id", ticketId);
     const ticket = supportTickets.find(t => t.id === ticketId);
-    if (ticket) await supabase.rpc("send_notification_to_user", { uid: ticket.userId, msg: `Your support ticket "${ticket.subject}" has been marked as: ${newStatus.toUpperCase()}` });
+    if (ticket) await supabase.rpc("send_notification_to_user", { p_user_id: ticket.userId, p_message: `Your support ticket "${ticket.subject}" has been marked as: ${newStatus.toUpperCase()}` });
     await supabase.from("audit_logs").insert({ admin_id: currentUser!.id, admin_name: currentUser!.username, action: `Updated ticket "${ticket?.subject}" to ${newStatus}`, type: "support" });
     await refreshSupportTickets();
   };
@@ -329,7 +329,7 @@ export default function Admin() {
       const currentPaid = Number((profile as Record<string,unknown>)?.total_paid) || 0;
       await supabase.from("profiles").update({ total_paid: currentPaid + amt }).eq("id", userId);
     }
-    await supabase.rpc("send_notification_to_user", { uid: userId, msg: `Your payment has been approved! Seats ${seatNumbers} are now confirmed.` });
+    await supabase.rpc("send_notification_to_user", { p_user_id: userId, p_message: `Your payment has been approved! Seats ${seatNumbers} are now confirmed.` });
     await supabase.from("audit_logs").insert({ admin_id: currentUser!.id, admin_name: currentUser!.username, user_id: userId, action: `Approved payment ${txId}`, type: "payment" });
     await loadData();
   };
@@ -341,10 +341,10 @@ export default function Admin() {
     if (seatNumbers && groupId) {
       const seatNums = seatNumbers.split("+").map(s => parseInt(s.replace(/\D/g, "")));
       for (const sn of seatNums) {
-        await supabase.from("slots").update({ user_id: null, status: "available", joined_at: null }).eq("group_id", groupId).eq("seat_no", sn).eq("user_id", userId);
+        await supabase.from("slots").update({ user_id: null, status: "available" as const, joined_at: null }).eq("group_id", groupId).eq("seat_no", sn).eq("user_id", userId);
       }
     }
-    await supabase.rpc("send_notification_to_user", { uid: userId, msg: `Your payment for ${groupName} was declined.${reason ? ` Reason: ${reason}` : ""} Your seats are now available again.` });
+    await supabase.rpc("send_notification_to_user", { p_user_id: userId, p_message: `Your payment for ${groupName} was declined.${reason ? ` Reason: ${reason}` : ""} Your seats are now available again.` });
     await supabase.from("audit_logs").insert({ admin_id: currentUser!.id, admin_name: currentUser!.username, user_id: userId, action: `Declined payment ${txId}. Reason: ${reason || "N/A"}`, type: "payment" });
     await loadData();
   };
@@ -353,18 +353,18 @@ export default function Admin() {
   const saveContactInfo = async () => { await supabase.from("contact_info").update({ whatsapp:editContact.whatsapp, facebook:editContact.facebook, email:editContact.email, call_number:editContact.callNumber, sms_number:editContact.smsNumber }).eq("id", 1); setContactInfo(editContact); alert("Contact info saved!"); };
   const generatePassword = () => { const chars = "ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789@#$!"; return Array.from({length:12},()=>chars[Math.floor(Math.random()*chars.length)]).join(""); };
 
-  const removeMemberFromSeat = async (slotId: number, userId: string, seatNo: number, groupName: string) => {
+  const removeMemberFromSeat = async (slotId: string, userId: string, seatNo: number, groupName: string) => {
     if (!confirm(`Remove user from Seat S${seatNo}?`)) return;
-    await supabase.from("slots").update({ user_id: null, status: "available", joined_at: null }).eq("id", slotId);
-    await supabase.rpc("send_notification_to_user", { uid: userId, msg: `You have been removed from Seat S${seatNo} in ${groupName} by an admin.` });
+    await supabase.from("slots").update({ user_id: null, status: "available" as const, joined_at: null }).eq("id", slotId);
+    await supabase.rpc("send_notification_to_user", { p_user_id: userId, p_message: `You have been removed from Seat S${seatNo} in ${groupName} by an admin.` });
     await supabase.from("audit_logs").insert({ admin_id: currentUser!.id, admin_name: currentUser!.username, user_id: userId, action: `Removed user from S${seatNo} in ${groupName}`, type: "moderation" });
     loadGroupMembers(memberGroupId);
   };
 
   const kickMemberFromGroup = async (userId: string, groupId: string, groupName: string) => {
     if (!confirm(`Kick this user from all seats in ${groupName}?`)) return;
-    await supabase.from("slots").update({ user_id: null, status: "available", joined_at: null }).eq("group_id", groupId).eq("user_id", userId);
-    await supabase.rpc("send_notification_to_user", { uid: userId, msg: `You have been removed from group ${groupName} by an admin.` });
+    await supabase.from("slots").update({ user_id: null, status: "available" as const, joined_at: null }).eq("group_id", groupId).eq("user_id", userId);
+    await supabase.rpc("send_notification_to_user", { p_user_id: userId, p_message: `You have been removed from group ${groupName} by an admin.` });
     await supabase.from("audit_logs").insert({ admin_id: currentUser!.id, admin_name: currentUser!.username, user_id: userId, action: `Kicked user from ${groupName}`, type: "moderation" });
     loadGroupMembers(memberGroupId);
   };
@@ -385,7 +385,7 @@ export default function Admin() {
         await supabase.from("slots").update({ is_disbursed: true, disbursed_at: new Date().toISOString() }).eq("group_id", disbGroupId).eq("seat_no", sn).eq("user_id", disbUserId);
       }
     }
-    await supabase.rpc("send_notification_to_user", { uid: disbUserId, msg: `🎉 You have been disbursed ₦${parseFloat(disbAmount).toLocaleString()} from ${selectedGroup?.name || "a group"}! Check your bank, it may take up to 24hrs.` });
+    await supabase.rpc("send_notification_to_user", { p_user_id: disbUserId, p_message: `🎉 You have been disbursed ₦${parseFloat(disbAmount).toLocaleString()} from ${selectedGroup?.name || "a group"}! Check your bank, it may take up to 24hrs.` });
     await supabase.from("audit_logs").insert({ admin_id: currentUser!.id, admin_name: currentUser!.username, user_id: disbUserId, action: `Disbursed ₦${parseFloat(disbAmount).toLocaleString()} to user from ${selectedGroup?.name}`, type: "disbursement" });
     setShowDisbModal(false); setDisbUserId(""); setDisbGroupId(""); setDisbAmount(""); setDisbDesc(""); setDisbSeats(""); setDisbFile(null);
     await loadData();
@@ -609,7 +609,7 @@ export default function Admin() {
                           <td className="px-3 py-2 text-muted-foreground text-[9px]">{m.joined_at?new Date(m.joined_at as string).toLocaleDateString():"-"}</td>
                           <td className="px-3 py-2">
                             <div className="flex gap-1">
-                              <Btn variant="red" size="xs" onClick={()=>removeMemberFromSeat(m.id as number, m.user_id as string, m.seat_no as number, gName2)}><X size={9}/>Remove Seat</Btn>
+                              <Btn variant="red" size="xs" onClick={()=>removeMemberFromSeat(m.id as string, m.user_id as string, m.seat_no as number, gName2)}><X size={9}/>Remove Seat</Btn>
                               <Btn variant="red" size="xs" onClick={()=>kickMemberFromGroup(m.user_id as string, memberGroupId, gName2)}><LogOut size={9}/>Kick</Btn>
                             </div>
                           </td>
@@ -862,7 +862,7 @@ export default function Admin() {
               <table className="w-full text-xs"><thead><tr className="border-b border-gold/10 bg-gold/5">{["User","Group","Reason","Status","Actions"].map(h=><th key={h} className="px-3 py-2 text-left text-muted-foreground font-semibold text-[9px] uppercase">{h}</th>)}</tr></thead>
               <tbody>{exitRequests.map((er,i)=>{
                 const p=er.profiles as Record<string,unknown>|null; const g=er.groups as Record<string,unknown>|null;
-                return <tr key={i} className="border-b border-white/5"><td className="px-3 py-2">@{p?.username as string}</td><td className="px-3 py-2">{g?.name as string}</td><td className="px-3 py-2 text-muted-foreground text-[10px]">{er.reason as string}</td><td className="px-3 py-2"><span className={`px-2 py-0.5 rounded-full text-[9px] font-bold border ${er.status==="pending"?"text-amber-400 border-amber-600/30 bg-amber-900/20":er.status==="approved"?"text-emerald-400 border-emerald-600/30 bg-emerald-900/20":"text-red-400 border-red-600/30 bg-red-900/20"}`}>{er.status as string}</span></td><td className="px-3 py-2">{er.status==="pending"&&<div className="flex gap-1"><Btn variant="green" size="xs" onClick={async()=>{await supabase.from("exit_requests").update({status:"approved"}).eq("id",er.id as string);await supabase.rpc("send_notification_to_user",{uid:er.user_id as string,msg:`Your exit request from ${(g?.name as string)||"group"} has been approved.`});await loadData()}}><CheckCircle size={9}/>Approve</Btn><Btn variant="red" size="xs" onClick={async()=>{await supabase.from("exit_requests").update({status:"declined"}).eq("id",er.id as string);await supabase.rpc("send_notification_to_user",{uid:er.user_id as string,msg:`Your exit request from ${(g?.name as string)||"group"} has been declined.`});await loadData()}}><X size={9}/>Decline</Btn></div>}</td></tr>;
+                return <tr key={i} className="border-b border-white/5"><td className="px-3 py-2">@{p?.username as string}</td><td className="px-3 py-2">{g?.name as string}</td><td className="px-3 py-2 text-muted-foreground text-[10px]">{er.reason as string}</td><td className="px-3 py-2"><span className={`px-2 py-0.5 rounded-full text-[9px] font-bold border ${er.status==="pending"?"text-amber-400 border-amber-600/30 bg-amber-900/20":er.status==="approved"?"text-emerald-400 border-emerald-600/30 bg-emerald-900/20":"text-red-400 border-red-600/30 bg-red-900/20"}`}>{er.status as string}</span></td><td className="px-3 py-2">{er.status==="pending"&&<div className="flex gap-1"><Btn variant="green" size="xs" onClick={async()=>{await supabase.from("exit_requests").update({status:"approved"}).eq("id",er.id as string);await supabase.rpc("send_notification_to_user",{p_user_id:er.user_id as string,p_message:`Your exit request from ${(g?.name as string)||"group"} has been approved.`});await loadData()}}><CheckCircle size={9}/>Approve</Btn><Btn variant="red" size="xs" onClick={async()=>{await supabase.from("exit_requests").update({status:"declined"}).eq("id",er.id as string);await supabase.rpc("send_notification_to_user",{p_user_id:er.user_id as string,p_message:`Your exit request from ${(g?.name as string)||"group"} has been declined.`});await loadData()}}><X size={9}/>Decline</Btn></div>}</td></tr>;
               })}</tbody></table>
             </div>
           </div>
