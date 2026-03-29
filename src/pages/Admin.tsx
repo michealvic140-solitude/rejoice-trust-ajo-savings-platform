@@ -353,7 +353,7 @@ export default function Admin() {
   const saveContactInfo = async () => { await supabase.from("contact_info").update({ whatsapp:editContact.whatsapp, facebook:editContact.facebook, email:editContact.email, call_number:editContact.callNumber, sms_number:editContact.smsNumber }).eq("id", 1); setContactInfo(editContact); alert("Contact info saved!"); };
   const generatePassword = () => { const chars = "ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789@#$!"; return Array.from({length:12},()=>chars[Math.floor(Math.random()*chars.length)]).join(""); };
 
-  const removeMemberFromSeat = async (slotId: number, userId: string, seatNo: number, groupName: string) => {
+  const removeMemberFromSeat = async (slotId: string, userId: string, seatNo: number, groupName: string) => {
     if (!confirm(`Remove user from Seat S${seatNo}?`)) return;
     await supabase.from("slots").update({ user_id: null, status: "available" as const, joined_at: null }).eq("id", slotId);
     await supabase.rpc("send_notification_to_user", { p_user_id: userId, p_message: `You have been removed from Seat S${seatNo} in ${groupName} by an admin.` });
