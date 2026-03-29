@@ -196,7 +196,7 @@ export default function GroupDetail() {
     await supabase.from("exit_requests").insert({ group_id: id, user_id: currentUser.id, reason: exitReason });
     await supabase.from("audit_logs").insert({ user_id: currentUser.id, action: `Requested exit from group ${group.name}`, type: "group" });
     setShowExitModal(false);
-    alert("Exit request sent to admin. Make sure you are not owing before leaving.");
+    toast.success("Exit request sent to admin. Make sure you are not owing before leaving.");
   };
 
   const handleSeatChange = async () => {
@@ -204,7 +204,7 @@ export default function GroupDetail() {
     await supabase.from("seat_change_requests").insert({ group_id: id, user_id: currentUser.id, current_seat: parseInt(seatChangeFrom), requested_seat: parseInt(seatChangeTo), reason: seatChangeReason });
     await supabase.from("audit_logs").insert({ user_id: currentUser.id, action: `Requested seat change in ${group.name}: S${seatChangeFrom} → S${seatChangeTo}`, type: "group" });
     setShowSeatChangeModal(false);
-    alert("Seat change request submitted to admin.");
+    toast.success("Seat change request submitted to admin.");
   };
 
   const slotColorClass = (slot: Slot) => {
