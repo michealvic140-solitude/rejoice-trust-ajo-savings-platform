@@ -199,7 +199,7 @@ export default function Admin() {
     await supabase.from("audit_logs").insert({ admin_id: currentUser!.id, admin_name: currentUser!.username, action: `Added ${count} seats to group: ${group.name}`, type: "group" });
     await refreshGroups();
     setShowAddSeatsModal(null); setAddSeatsCount("");
-    alert(`${count} seats added!`);
+    toast.success(`${count} seats added!`);
   };
 
   const toggleGroupLive = async (groupId: string, isLive: boolean) => {
@@ -232,11 +232,11 @@ export default function Admin() {
     if (notifTarget === "all") await supabase.rpc("send_notification_to_all", { p_message: notifMsg });
     else if (notifTarget === "user" && notifUserId) await supabase.rpc("send_notification_to_user", { p_user_id: notifUserId, p_message: notifMsg });
     else if (notifTarget === "vip") { const vips = adminUsers.filter(u => u.is_vip); for (const u of vips) await supabase.rpc("send_notification_to_user", { p_user_id: u.id as string, p_message: notifMsg }); }
-    setNotifMsg(""); setNotifUserId(""); alert("Notification sent!");
+    setNotifMsg(""); setNotifUserId(""); toast.success("Notification sent!");
   };
 
   const banUser = async (userId: string) => {
-    if (!banReason.trim()) { alert("Please provide a ban reason."); return; }
+    if (!banReason.trim()) { toast.error("Please provide a ban reason."); return; }
     await supabase.from("profiles").update({ is_banned: true }).eq("id", userId);
     await supabase.rpc("send_notification_to_user", { p_user_id: userId, p_message: `Your account has been banned. Reason: ${banReason}. Contact admin to appeal.` });
     await supabase.from("audit_logs").insert({ admin_id: currentUser!.id, admin_name: currentUser!.username, user_id: userId, action: `Banned user. Reason: ${banReason}`, type: "moderation" });
@@ -244,7 +244,7 @@ export default function Admin() {
   };
 
   const restrictUser = async (userId: string) => {
-    if (!restrictReason.trim()) { alert("Please provide a restriction reason."); return; }
+    if (!restrictReason.trim()) { toast.error("Please provide a restriction reason."); return; }
     await supabase.from("profiles").update({ is_restricted: true, is_frozen: true }).eq("id", userId);
     await supabase.rpc("send_notification_to_user", { p_user_id: userId, p_message: `Your account has been restricted/frozen. Reason: ${restrictReason}. You cannot view or join groups. Contact admin.` });
     await supabase.from("audit_logs").insert({ admin_id: currentUser!.id, admin_name: currentUser!.username, user_id: userId, action: `Restricted/Froze user. Reason: ${restrictReason}`, type: "moderation" });
@@ -354,8 +354,8 @@ export default function Admin() {
     await loadData();
   };
 
-  const saveTerms = async () => { setTermSaving(true); await supabase.from("platform_settings").update({ value: termContent }).eq("key", "terms_and_conditions"); setTermSaving(false); alert("Terms saved!"); };
-  const saveContactInfo = async () => { await supabase.from("contact_info").update({ whatsapp:editContact.whatsapp, facebook:editContact.facebook, email:editContact.email, call_number:editContact.callNumber, sms_number:editContact.smsNumber }).eq("id", 1); setContactInfo(editContact); alert("Contact info saved!"); };
+  const saveTerms = async () => { setTermSaving(true); await supabase.from("platform_settings").update({ value: termContent }).eq("key", "terms_and_conditions"); setTermSaving(false); toast.success("Terms saved!"); };
+  const saveContactInfo = async () => { await supabase.from("contact_info").update({ whatsapp:editContact.whatsapp, facebook:editContact.facebook, email:editContact.email, call_number:editContact.callNumber, sms_number:editContact.smsNumber }).eq("id", 1); setContactInfo(editContact); toast.success("Contact info saved!"); };
   const generatePassword = () => { const chars = "ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789@#$!"; return Array.from({length:12},()=>chars[Math.floor(Math.random()*chars.length)]).join(""); };
 
   const removeMemberFromSeat = async (slotId: string, userId: string, seatNo: number, groupName: string) => {
@@ -530,7 +530,7 @@ export default function Admin() {
                         <Btn variant={u.is_vip?"amber":"blue"} size="xs" onClick={()=>updateUserFlag(u.id as string,"is_vip",!u.is_vip)}><Crown size={9}/>{u.is_vip?"Rm VIP":"VIP"}</Btn>
                         <Btn variant={u.is_banned?"green":"red"} size="xs" onClick={()=>{if(u.is_banned){updateUserFlag(u.id as string,"is_banned",false)}else{setShowBanModal(u.id as string);setBanReason("")}}}><Ban size={9}/>{u.is_banned?"Unban":"Ban"}</Btn>
                         <Btn variant={u.is_restricted?"green":"amber"} size="xs" onClick={()=>{if(u.is_restricted){updateUserFlag(u.id as string,"is_restricted",false);updateUserFlag(u.id as string,"is_frozen",false)}else{setShowRestrictModal(u.id as string);setRestrictReason("")}}}><Lock size={9}/>{u.is_restricted?"Unrestrict":"Restrict"}</Btn>
-                        <Btn variant="amber" size="xs" onClick={async()=>{const pw=generatePassword();await supabase.from("profiles").update({password_plain:pw}).eq("id",u.id as string);alert(`New password: ${pw}`)}}><Key size={9}/>Gen Pw</Btn>
+                        <Btn variant="amber" size="xs" onClick={async()=>{const pw=generatePassword();await supabase.from("profiles").update({password_plain:pw}).eq("id",u.id as string);toast.success(`New password: ${pw}`)}}><Key size={9}/>Gen Pw</Btn>
                       </div>
                     </td>
                   </tr>
@@ -697,7 +697,7 @@ export default function Admin() {
           <div className="animate-fade-up">
             <div className="flex items-center justify-between mb-6">
               <h2 className="gold-gradient-text font-cinzel font-bold text-2xl">Debt Tracking</h2>
-              <Btn variant="amber" onClick={async()=>{await supabase.rpc("check_and_mark_defaulters");await loadData();alert("Defaulter check complete!")}}><AlertTriangle size={12}/>Check Defaulters</Btn>
+              <Btn variant="amber" onClick={async()=>{await supabase.rpc("check_and_mark_defaulters");await loadData();toast.success("Defaulter check complete!")}}><AlertTriangle size={12}/>Check Defaulters</Btn>
             </div>
             <div className="glass-card-static rounded-2xl overflow-hidden">
               <div className="overflow-x-auto">
