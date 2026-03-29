@@ -15,7 +15,6 @@ export default function History() {
     supabase.from("audit_logs").select("*").eq("user_id", currentUser.id).order("created_at", { ascending: false }).then(({ data }) => {
       if (data) setLogs((data as any) as typeof logs);
     });
-    });
   }, [currentUser?.id]);
 
   if (!isLoggedIn) return <Navigate to="/login" replace />;
