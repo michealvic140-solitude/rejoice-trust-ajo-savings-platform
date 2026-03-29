@@ -5,6 +5,7 @@ import { Send, Lock, Users, Upload, X, LogOut, Clock, ArrowLeftRight, Megaphone 
 import ParticleBackground from "@/components/ParticleBackground";
 import { supabase } from "@/integrations/supabase/client";
 import type { Slot } from "@/context/AppContext";
+import { toast } from "sonner";
 
 interface ChatMessage { id: string; username: string; text: string; created_at: string; }
 
