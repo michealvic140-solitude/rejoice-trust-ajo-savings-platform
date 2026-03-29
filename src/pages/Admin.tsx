@@ -117,7 +117,7 @@ export default function Admin() {
 
   const loadGroupMembers = async (groupId: string) => {
     if (!groupId) { setGroupMembers([]); setMemberStats({ totalUsers: 0, totalSeats: 0 }); return; }
-    const { data } = await supabase.from("slots").select("*, profiles(username, first_name, last_name, nickname, is_vip, profile_picture)").eq("group_id", groupId).order("seat_no");
+    const { data } = await supabase.from("slots").select("*").eq("group_id", groupId).order("seat_no");
     if (data) {
       const occupied = data.filter((s: Record<string,unknown>) => s.user_id);
       setGroupMembers(occupied as typeof groupMembers);
