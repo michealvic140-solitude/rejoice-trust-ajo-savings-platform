@@ -5,6 +5,7 @@ import { BarChart3, Users, Shield, FileText, Bell, Ban, Star, Lock, Search, Chec
 import ParticleBackground from "@/components/ParticleBackground";
 import { supabase } from "@/integrations/supabase/client";
 import type { Announcement } from "@/context/AppContext";
+import { toast } from "sonner";
 
 type SideTab = "overview"|"users"|"groups"|"payments"|"announcements"|"support"|"contact-info"|"seat-changes"|"exit-requests"|"audit"|"terms"|"disbursements"|"members"|"debts";
 
@@ -30,7 +31,7 @@ const Modal = ({ title, onClose, children }: { title:string; onClose:()=>void; c
 interface TicketReply { id: string; message: string; is_admin: boolean; attachment_url?: string; created_at: string; user_id: string; }
 
 export default function Admin() {
-  const { currentUser, isLoggedIn, groups, refreshGroups, announcements, setAnnouncements, refreshAnnouncements, supportTickets, refreshSupportTickets, contactInfo, setContactInfo, maintenanceMode, setMaintenanceMode } = useApp();
+  const { currentUser, isLoggedIn, loading, groups, refreshGroups, announcements, setAnnouncements, refreshAnnouncements, supportTickets, refreshSupportTickets, contactInfo, setContactInfo, maintenanceMode, setMaintenanceMode } = useApp();
   const isAdmin = currentUser?.role === "admin";
 
   const [sideTab, setSideTab] = useState<SideTab>("overview");
@@ -157,6 +158,7 @@ export default function Admin() {
     return () => { supabase.removeChannel(channel); };
   }, [openTicketId]);
 
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-background"><div className="text-gold font-cinzel text-lg animate-pulse">Loading...</div></div>;
   if (!isLoggedIn || (currentUser?.role !== "admin" && currentUser?.role !== "moderator")) return <Navigate to="/" replace />;
 
   const toggleMaintenance = async () => {
