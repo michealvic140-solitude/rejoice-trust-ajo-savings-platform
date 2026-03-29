@@ -13,7 +13,8 @@ export default function History() {
   useEffect(() => {
     if (!currentUser) return;
     supabase.from("audit_logs").select("*").eq("user_id", currentUser.id).order("created_at", { ascending: false }).then(({ data }) => {
-      if (data) setLogs(data as typeof logs);
+      if (data) setLogs((data as any) as typeof logs);
+    });
     });
   }, [currentUser?.id]);
 
