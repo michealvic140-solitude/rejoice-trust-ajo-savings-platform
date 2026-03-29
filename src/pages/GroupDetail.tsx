@@ -167,9 +167,9 @@ export default function GroupDetail() {
     try {
       let screenshotUrl: string | undefined;
       if (payProof) {
-        const path = `${currentUser.id}/${id}/${Date.now()}_${payProof.name}`;
-        const { data: up } = await supabase.storage.from("payment-proofs").upload(path, payProof);
-        if (up) { const { data: u } = supabase.storage.from("payment-proofs").getPublicUrl(up.path); screenshotUrl = u.publicUrl; }
+        const path = `payment-proofs/${currentUser.id}/${id}/${Date.now()}_${payProof.name}`;
+        const { data: up } = await supabase.storage.from("uploads").upload(path, payProof);
+        if (up) { const { data: u } = supabase.storage.from("uploads").getPublicUrl(up.path); screenshotUrl = u.publicUrl; }
       }
       const seatNos = selectedSeats.map(s => `S${s}`).join("+");
       const totalAmt = selectedSeats.length * group.contributionAmount;
