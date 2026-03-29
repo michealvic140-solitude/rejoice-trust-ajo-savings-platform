@@ -96,12 +96,12 @@ export default function Admin() {
     const [statsData, usersData, paymentsData, exitData, seatData, auditData, disbData, debtsData] = await Promise.all([
       supabase.rpc("get_platform_stats"),
       supabase.from("profiles").select("*").order("created_at", { ascending: false }),
-      supabase.from("transactions").select("*, profiles(username, first_name, last_name, nickname)").order("created_at", { ascending: false }),
-      supabase.from("exit_requests").select("*, profiles(username, nickname), groups(name)").order("created_at", { ascending: false }),
-      supabase.from("seat_change_requests").select("*, profiles(username, nickname), groups(name)").order("created_at", { ascending: false }),
+      supabase.from("transactions").select("*").order("created_at", { ascending: false }),
+      supabase.from("exit_requests").select("*").order("created_at", { ascending: false }),
+      supabase.from("seat_change_requests").select("*").order("created_at", { ascending: false }),
       supabase.from("audit_logs").select("*").order("created_at", { ascending: false }).limit(200),
-      supabase.from("disbursements").select("*, profiles(username, first_name, last_name)").order("created_at", { ascending: false }),
-      supabase.from("user_debts").select("*, profiles(username, first_name, last_name)").order("created_at", { ascending: false }),
+      supabase.from("disbursements").select("*").order("created_at", { ascending: false }),
+      supabase.from("user_debts").select("*").order("created_at", { ascending: false }),
     ]);
     if (statsData.data) setStats(statsData.data as typeof stats);
     if (usersData.data) setAdminUsers(usersData.data as typeof adminUsers);
