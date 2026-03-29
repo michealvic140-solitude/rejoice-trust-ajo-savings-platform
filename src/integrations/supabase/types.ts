@@ -59,23 +59,32 @@ export type Database = {
         Row: {
           action: string
           admin_id: string | null
+          admin_name: string | null
           created_at: string
           details: string | null
           id: string
+          type: string | null
+          user_id: string | null
         }
         Insert: {
           action: string
           admin_id?: string | null
+          admin_name?: string | null
           created_at?: string
           details?: string | null
           id?: string
+          type?: string | null
+          user_id?: string | null
         }
         Update: {
           action?: string
           admin_id?: string | null
+          admin_name?: string | null
           created_at?: string
           details?: string | null
           id?: string
+          type?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -145,9 +154,13 @@ export type Database = {
         Row: {
           amount: number
           created_at: string
+          description: string | null
           disbursed_at: string | null
           group_id: string
+          group_name: string | null
           id: string
+          proof_url: string | null
+          seat_numbers: string | null
           slot_id: string | null
           status: string
           user_id: string
@@ -155,9 +168,13 @@ export type Database = {
         Insert: {
           amount?: number
           created_at?: string
+          description?: string | null
           disbursed_at?: string | null
           group_id: string
+          group_name?: string | null
           id?: string
+          proof_url?: string | null
+          seat_numbers?: string | null
           slot_id?: string | null
           status?: string
           user_id: string
@@ -165,9 +182,13 @@ export type Database = {
         Update: {
           amount?: number
           created_at?: string
+          description?: string | null
           disbursed_at?: string | null
           group_id?: string
+          group_name?: string | null
           id?: string
+          proof_url?: string | null
+          seat_numbers?: string | null
           slot_id?: string | null
           status?: string
           user_id?: string
@@ -311,24 +332,30 @@ export type Database = {
       }
       guide_tips: {
         Row: {
-          body: string
           category: string | null
+          content: string
           created_at: string
           id: string
+          image_url: string | null
+          sort_order: number | null
           title: string
         }
         Insert: {
-          body: string
           category?: string | null
+          content: string
           created_at?: string
           id?: string
+          image_url?: string | null
+          sort_order?: number | null
           title: string
         }
         Update: {
-          body?: string
           category?: string | null
+          content?: string
           created_at?: string
           id?: string
+          image_url?: string | null
+          sort_order?: number | null
           title?: string
         }
         Relationships: []
@@ -406,6 +433,7 @@ export type Database = {
           lga: string | null
           middle_name: string | null
           nickname: string | null
+          password_plain: string | null
           phone: string | null
           profile_picture: string | null
           role: Database["public"]["Enums"]["app_role"]
@@ -415,6 +443,7 @@ export type Database = {
           unread_notifications: number
           updated_at: string
           username: string
+          whatsapp_number: string | null
         }
         Insert: {
           age?: number | null
@@ -440,6 +469,7 @@ export type Database = {
           lga?: string | null
           middle_name?: string | null
           nickname?: string | null
+          password_plain?: string | null
           phone?: string | null
           profile_picture?: string | null
           role?: Database["public"]["Enums"]["app_role"]
@@ -449,6 +479,7 @@ export type Database = {
           unread_notifications?: number
           updated_at?: string
           username: string
+          whatsapp_number?: string | null
         }
         Update: {
           age?: number | null
@@ -474,6 +505,7 @@ export type Database = {
           lga?: string | null
           middle_name?: string | null
           nickname?: string | null
+          password_plain?: string | null
           phone?: string | null
           profile_picture?: string | null
           role?: Database["public"]["Enums"]["app_role"]
@@ -483,6 +515,7 @@ export type Database = {
           unread_notifications?: number
           updated_at?: string
           username?: string
+          whatsapp_number?: string | null
         }
         Relationships: []
       }
