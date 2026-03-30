@@ -610,7 +610,10 @@ export default function Admin() {
                           <td className="px-3 py-2">{p?.is_vip?"⭐ VIP":"-"}</td>
                           <td className="px-3 py-2 text-muted-foreground text-[9px]">{m.joined_at?new Date(m.joined_at as string).toLocaleDateString():"-"}</td>
                           <td className="px-3 py-2">
-                            <div className="flex gap-1">
+                            <div className="flex gap-1 flex-wrap">
+                              {m.status === "reserved" && (
+                                <Btn variant="amber" size="xs" onClick={()=>unreserveSeat(m.id as string, m.user_id as string, m.seat_no as number, gName2)}><Lock size={9}/>Unreserve</Btn>
+                              )}
                               <Btn variant="red" size="xs" onClick={()=>removeMemberFromSeat(m.id as string, m.user_id as string, m.seat_no as number, gName2)}><X size={9}/>Remove Seat</Btn>
                               <Btn variant="red" size="xs" onClick={()=>kickMemberFromGroup(m.user_id as string, memberGroupId, gName2)}><LogOut size={9}/>Kick</Btn>
                             </div>
