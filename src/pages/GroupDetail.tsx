@@ -136,7 +136,15 @@ export default function GroupDetail() {
   const handleSeatClick = (slot: Slot) => {
     if (!isLoggedIn) { navigate("/login"); return; }
     if (slot.status === "claimed" || slot.status === "locked") return;
-    if ((slot.status as unknown as string) === "mine") return;
+    // Allow user to click their own reserved seat to go to payment
+    if ((slot.status as unknown as string) === "mine") {
+      const myReservedSeats = slots.filter(s => s.userId === currentUser?.id && s.status === "reserved").map(s => s.seatNo);
+      if (myReservedSeats.length > 0) {
+        setSelectedSeats(myReservedSeats);
+        setPayStep("payment");
+      }
+      return;
+    }
     if (slot.status === "reserved" && slot.userId !== currentUser?.id) return;
     const seatNo = slot.seatNo;
     setSelectedSeats(prev => prev.includes(seatNo) ? prev.filter(s => s !== seatNo) : [...prev, seatNo]);
