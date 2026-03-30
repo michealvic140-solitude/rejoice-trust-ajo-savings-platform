@@ -361,8 +361,8 @@ export default function GroupDetail() {
                 {joinError && <p className="text-red-400 text-xs mb-3">{joinError}</p>}
                 <div className="flex flex-col gap-2">
                   <button onClick={() => setPayStep("idle")} className="btn-glass w-full py-2.5 rounded-xl text-sm">Back</button>
-                  <button onClick={async () => { await confirmSeats(); setPayStep("idle"); setSelectedSeats([]); }} disabled={payLoading} className="btn-glass w-full py-2.5 rounded-xl text-sm font-bold border-orange-500/40 text-orange-400 hover:bg-orange-900/20">{payLoading ? "Reserving..." : "🟠 Reserve Only (Pay Later)"}</button>
-                  <button onClick={confirmSeats} disabled={payLoading} className="btn-gold w-full py-2.5 rounded-xl text-sm font-bold">{payLoading ? "Reserving..." : "💰 Reserve & Pay Now"}</button>
+                  <button onClick={() => confirmSeats(false)} disabled={payLoading} className="btn-glass w-full py-2.5 rounded-xl text-sm font-bold border-orange-500/40 text-orange-400 hover:bg-orange-900/20">{payLoading ? "Reserving..." : "🟠 Reserve Only (Pay Later)"}</button>
+                  <button onClick={() => confirmSeats(true)} disabled={payLoading} className="btn-gold w-full py-2.5 rounded-xl text-sm font-bold">{payLoading ? "Reserving..." : "💰 Reserve & Pay Now"}</button>
                 </div>
                 <p className="text-muted-foreground text-[10px] mt-3 text-center">Reserve Only: Holds your seat. You can pay later.<br/>Reserve & Pay Now: Proceeds to payment immediately.</p>
               </div>
