@@ -433,7 +433,6 @@ export type Database = {
           lga: string | null
           middle_name: string | null
           nickname: string | null
-          password_plain: string | null
           phone: string | null
           profile_picture: string | null
           role: Database["public"]["Enums"]["app_role"]
@@ -469,7 +468,6 @@ export type Database = {
           lga?: string | null
           middle_name?: string | null
           nickname?: string | null
-          password_plain?: string | null
           phone?: string | null
           profile_picture?: string | null
           role?: Database["public"]["Enums"]["app_role"]
@@ -505,7 +503,6 @@ export type Database = {
           lga?: string | null
           middle_name?: string | null
           nickname?: string | null
-          password_plain?: string | null
           phone?: string | null
           profile_picture?: string | null
           role?: Database["public"]["Enums"]["app_role"]
