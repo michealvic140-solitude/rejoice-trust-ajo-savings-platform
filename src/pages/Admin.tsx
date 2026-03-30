@@ -374,6 +374,19 @@ export default function Admin() {
     loadGroupMembers(memberGroupId);
   };
 
+  const unreserveSeat = async (slotId: string, userId: string, seatNo: number, groupName: string) => {
+    if (!confirm(`Unreserve Seat S${seatNo}? This will release it for others to select.`)) return;
+    await supabase.from("slots").update({ user_id: null, status: "available" as const, joined_at: null }).eq("id", slotId);
+    await supabase.rpc("send_notification_to_user", { p_user_id: userId, p_message: `Your reservation for Seat S${seatNo} in ${groupName} has been released by an admin. You may re-select it or choose another seat.` });
+    await supabase.from("audit_logs").insert({ admin_id: currentUser!.id, admin_name: currentUser!.username, user_id: userId, action: `Unreserved S${seatNo} in ${groupName}`, type: "moderation" });
+    // Update filled_slots
+    const { data: slotCount } = await supabase.from("slots").select("id").eq("group_id", memberGroupId).neq("status", "available");
+    if (slotCount) await supabase.from("groups").update({ filled_slots: slotCount.length }).eq("id", memberGroupId);
+    loadGroupMembers(memberGroupId);
+    refreshGroups();
+    toast.success(`Seat S${seatNo} has been unreserved and is now available.`);
+  };
+
   const createDisbursement = async () => {
     if (!disbUserId || !disbGroupId || !disbAmount) return;
     let imageUrl: string | undefined;
