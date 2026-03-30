@@ -58,7 +58,7 @@ export default function Profile() {
         if (newPw.length < 8) { fail("Password must be at least 8 characters"); return; }
         const { error: pwErr } = await supabase.auth.updateUser({ password: newPw });
         if (pwErr) { fail(pwErr.message); return; }
-        await supabase.from("profiles").update({ password_plain: newPw }).eq("id", currentUser.id);
+        // Password is managed by auth system, no need to store separately
         setCurPw(""); setNewPw(""); setConfPw("");
         await supabase.from("audit_logs").insert({ user_id: currentUser.id, action: "Changed account password", type: "security" });
       } else if (tab === "email") {
