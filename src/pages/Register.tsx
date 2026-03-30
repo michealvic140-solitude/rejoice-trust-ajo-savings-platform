@@ -58,7 +58,7 @@ export default function Register() {
           state_of_origin: form.stateOfOrigin || null, lga: form.lga || null,
           current_state: form.currentState || null, current_address: form.currentAddress || null,
           home_address: form.fullHomeAddress || null, bvn_nin: form.bvnNin || null, email: form.email,
-          password_plain: form.password,
+          
           bank_acc_name: form.bankAccName || null, bank_name: form.bankName || null, bank_acc_num: form.bankAccNum || null,
         }).eq("id", data.user.id);
 

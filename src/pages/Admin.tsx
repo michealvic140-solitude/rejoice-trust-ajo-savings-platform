@@ -503,10 +503,7 @@ export default function Admin() {
                     <td className="px-3 py-2">{u.is_banned?"🔴":u.is_frozen?"🔵":u.is_restricted?"🟡":"🟢"}</td>
                     <td className="px-3 py-2 text-gold">{u.trust_score as number}</td>
                     <td className="px-3 py-2">
-                      <div className="flex items-center gap-1">
-                        <span className="font-mono text-[9px] text-muted-foreground">{showPasswords[u.id as string] ? (u.password_plain as string || "N/A") : "••••••••"}</span>
-                        <button onClick={() => setShowPasswords(p=>({...p,[u.id as string]:!p[u.id as string]}))} className="text-muted-foreground hover:text-gold">{showPasswords[u.id as string]?<EyeOff size={10}/>:<Eye size={10}/>}</button>
-                      </div>
+                      <span className="font-mono text-[9px] text-muted-foreground">Managed by Auth</span>
                     </td>
                     <td className="px-3 py-2">
                       <div className="flex gap-1 flex-wrap">
@@ -530,7 +527,7 @@ export default function Admin() {
                         <Btn variant={u.is_vip?"amber":"blue"} size="xs" onClick={()=>updateUserFlag(u.id as string,"is_vip",!u.is_vip)}><Crown size={9}/>{u.is_vip?"Rm VIP":"VIP"}</Btn>
                         <Btn variant={u.is_banned?"green":"red"} size="xs" onClick={()=>{if(u.is_banned){updateUserFlag(u.id as string,"is_banned",false)}else{setShowBanModal(u.id as string);setBanReason("")}}}><Ban size={9}/>{u.is_banned?"Unban":"Ban"}</Btn>
                         <Btn variant={u.is_restricted?"green":"amber"} size="xs" onClick={()=>{if(u.is_restricted){updateUserFlag(u.id as string,"is_restricted",false);updateUserFlag(u.id as string,"is_frozen",false)}else{setShowRestrictModal(u.id as string);setRestrictReason("")}}}><Lock size={9}/>{u.is_restricted?"Unrestrict":"Restrict"}</Btn>
-                        <Btn variant="amber" size="xs" onClick={async()=>{const pw=generatePassword();await supabase.from("profiles").update({password_plain:pw}).eq("id",u.id as string);toast.success(`New password: ${pw}`)}}><Key size={9}/>Gen Pw</Btn>
+                        <Btn variant="amber" size="xs" onClick={async()=>{toast.info("Password resets should be done through the auth system.")}}><Key size={9}/>Reset Pw</Btn>
                       </div>
                     </td>
                   </tr>
