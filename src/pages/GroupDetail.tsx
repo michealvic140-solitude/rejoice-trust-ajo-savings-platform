@@ -142,7 +142,7 @@ export default function GroupDetail() {
     setSelectedSeats(prev => prev.includes(seatNo) ? prev.filter(s => s !== seatNo) : [...prev, seatNo]);
   };
 
-  const confirmSeats = async () => {
+  const confirmSeats = async (goToPayment: boolean = true) => {
     if (!selectedSeats.length || !id || !currentUser) return;
     setJoinError(""); setPayLoading(true);
     try {
@@ -157,7 +157,14 @@ export default function GroupDetail() {
       if (slotCount) {
         await supabase.from("groups").update({ filled_slots: slotCount.length }).eq("id", id);
       }
-      await loadSlots(); await refreshGroups(); setPayStep("payment");
+      await loadSlots(); await refreshGroups();
+      if (goToPayment) {
+        setPayStep("payment");
+      } else {
+        toast.success("Seats reserved! You can pay later from this page.");
+        setPayStep("idle");
+        setSelectedSeats([]);
+      }
     } catch (e: unknown) { setJoinError((e as Error).message || "Failed to reserve seats"); }
     setPayLoading(false);
   };
