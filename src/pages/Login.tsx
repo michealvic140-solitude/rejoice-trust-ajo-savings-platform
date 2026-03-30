@@ -3,6 +3,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import { useApp } from "@/context/AppContext";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable/index";
 import ParticleBackground from "@/components/ParticleBackground";
 import rtaspLogo from "@/assets/rtrasp-logo.png";
 
