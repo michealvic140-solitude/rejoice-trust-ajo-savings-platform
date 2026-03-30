@@ -136,13 +136,21 @@ export default function GroupDetail() {
   const handleSeatClick = (slot: Slot) => {
     if (!isLoggedIn) { navigate("/login"); return; }
     if (slot.status === "claimed" || slot.status === "locked") return;
-    if ((slot.status as unknown as string) === "mine") return;
+    // Allow user to click their own reserved seat to go to payment
+    if ((slot.status as unknown as string) === "mine") {
+      const myReservedSeats = slots.filter(s => s.userId === currentUser?.id && s.status === "reserved").map(s => s.seatNo);
+      if (myReservedSeats.length > 0) {
+        setSelectedSeats(myReservedSeats);
+        setPayStep("payment");
+      }
+      return;
+    }
     if (slot.status === "reserved" && slot.userId !== currentUser?.id) return;
     const seatNo = slot.seatNo;
     setSelectedSeats(prev => prev.includes(seatNo) ? prev.filter(s => s !== seatNo) : [...prev, seatNo]);
   };
 
-  const confirmSeats = async () => {
+  const confirmSeats = async (goToPayment: boolean = true) => {
     if (!selectedSeats.length || !id || !currentUser) return;
     setJoinError(""); setPayLoading(true);
     try {
@@ -157,7 +165,14 @@ export default function GroupDetail() {
       if (slotCount) {
         await supabase.from("groups").update({ filled_slots: slotCount.length }).eq("id", id);
       }
-      await loadSlots(); await refreshGroups(); setPayStep("payment");
+      await loadSlots(); await refreshGroups();
+      if (goToPayment) {
+        setPayStep("payment");
+      } else {
+        toast.success("Seats reserved! You can pay later from this page.");
+        setPayStep("idle");
+        setSelectedSeats([]);
+      }
     } catch (e: unknown) { setJoinError((e as Error).message || "Failed to reserve seats"); }
     setPayLoading(false);
   };
@@ -352,10 +367,12 @@ export default function GroupDetail() {
                 <p className="text-foreground text-sm mb-2">Selected: <span className="text-gold font-bold">{selectedSeats.map(s => `S${s}`).join(", ")}</span></p>
                 <p className="text-foreground text-sm mb-4">Total: <span className="text-gold font-bold">₦{(selectedSeats.length * group.contributionAmount).toLocaleString()}</span></p>
                 {joinError && <p className="text-red-400 text-xs mb-3">{joinError}</p>}
-                <div className="flex gap-3">
-                  <button onClick={() => setPayStep("idle")} className="btn-glass flex-1 py-2.5 rounded-xl text-sm">Back</button>
-                  <button onClick={confirmSeats} disabled={payLoading} className="btn-gold flex-1 py-2.5 rounded-xl text-sm font-bold">{payLoading ? "Reserving..." : "Confirm & Pay"}</button>
+                <div className="flex flex-col gap-2">
+                  <button onClick={() => setPayStep("idle")} className="btn-glass w-full py-2.5 rounded-xl text-sm">Back</button>
+                  <button onClick={() => confirmSeats(false)} disabled={payLoading} className="btn-glass w-full py-2.5 rounded-xl text-sm font-bold border-orange-500/40 text-orange-400 hover:bg-orange-900/20">{payLoading ? "Reserving..." : "🟠 Reserve Only (Pay Later)"}</button>
+                  <button onClick={() => confirmSeats(true)} disabled={payLoading} className="btn-gold w-full py-2.5 rounded-xl text-sm font-bold">{payLoading ? "Reserving..." : "💰 Reserve & Pay Now"}</button>
                 </div>
+                <p className="text-muted-foreground text-[10px] mt-3 text-center">Reserve Only: Holds your seat. You can pay later.<br/>Reserve & Pay Now: Proceeds to payment immediately.</p>
               </div>
             )}
             {payStep === "payment" && (
