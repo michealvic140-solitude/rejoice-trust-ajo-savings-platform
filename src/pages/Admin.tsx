@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Announcement } from "@/context/AppContext";
 import { toast } from "sonner";
 
-type SideTab = "overview"|"users"|"groups"|"payments"|"announcements"|"support"|"contact-info"|"seat-changes"|"exit-requests"|"audit"|"terms"|"disbursements"|"members"|"debts";
+type SideTab = "overview"|"users"|"groups"|"payments"|"announcements"|"support"|"contact-info"|"seat-changes"|"exit-requests"|"audit"|"terms"|"disbursements"|"members"|"debts"|"debt-payments";
 
 const Btn = ({ onClick, children, variant="glass", size="sm", className="", disabled=false }: { onClick?:()=>void; children:React.ReactNode; variant?:"glass"|"gold"|"red"|"green"|"blue"|"amber"; size?:"xs"|"sm"; className?:string; disabled?:boolean; }) => {
   const base="inline-flex items-center gap-1 font-semibold rounded-lg transition-all cursor-pointer border disabled:opacity-50";
@@ -52,7 +52,7 @@ export default function Admin() {
   const [supportReplyText, setSupportReplyText] = useState(""); const [supportReplyFile, setSupportReplyFile] = useState<File|null>(null);
   const [gName, setGName] = useState(""); const [gDesc, setGDesc] = useState(""); const [gAmt, setGAmt] = useState(""); const [gCycle, setGCycle] = useState("daily"); const [gSlots, setGSlots] = useState("100"); const [gBank, setGBank] = useState(""); const [gAccNum, setGAccNum] = useState(""); const [gAccName, setGAccName] = useState(""); const [editingGroup, setEditingGroup] = useState<string|null>(null);
   const [gPayoutAmt, setGPayoutAmt] = useState(""); const [gPayFreq, setGPayFreq] = useState("daily"); const [gPayDays, setGPayDays] = useState("1"); const [gDisbDays, setGDisbDays] = useState("30");
-  const [notifTarget, setNotifTarget] = useState("all"); const [notifMsg, setNotifMsg] = useState(""); const [notifUserId, setNotifUserId] = useState("");
+  const [notifTarget, setNotifTarget] = useState("all"); const [notifMsg, setNotifMsg] = useState(""); const [notifUserId, setNotifUserId] = useState(""); const [notifGroupId, setNotifGroupId] = useState("");
   const [editedUser, setEditedUser] = useState<Record<string,string>>({});
   const [termContent, setTermContent] = useState(""); const [termSaving, setTermSaving] = useState(false);
   const [editContact, setEditContact] = useState({ ...contactInfo });
@@ -231,8 +231,9 @@ export default function Admin() {
     if (!notifMsg) return;
     if (notifTarget === "all") await supabase.rpc("send_notification_to_all", { p_message: notifMsg });
     else if (notifTarget === "user" && notifUserId) await supabase.rpc("send_notification_to_user", { p_user_id: notifUserId, p_message: notifMsg });
+    else if (notifTarget === "group" && notifGroupId) await supabase.rpc("send_notification_to_group", { p_group_id: notifGroupId, p_message: notifMsg });
     else if (notifTarget === "vip") { const vips = adminUsers.filter(u => u.is_vip); for (const u of vips) await supabase.rpc("send_notification_to_user", { p_user_id: u.id as string, p_message: notifMsg }); }
-    setNotifMsg(""); setNotifUserId(""); toast.success("Notification sent!");
+    setNotifMsg(""); setNotifUserId(""); setNotifGroupId(""); toast.success("Notification sent!");
   };
 
   const banUser = async (userId: string) => {
@@ -423,6 +424,7 @@ export default function Admin() {
     {id:"payments",icon:FileText,label:"Payments",adminOnly:true},
     {id:"disbursements",icon:DollarSign,label:"Disbursements",adminOnly:true},
     {id:"debts",icon:AlertTriangle,label:"Debt Tracking",adminOnly:true},
+    {id:"debt-payments",icon:DollarSign,label:"Debt Payments",adminOnly:true},
     {id:"announcements",icon:Megaphone,label:"Announcements"},
     {id:"support",icon:Bell,label:"Support"},
     {id:"contact-info",icon:Phone,label:"Contact Info",adminOnly:true},
@@ -708,24 +710,35 @@ export default function Admin() {
         {/* ── DEBTS ── */}
         {sideTab === "debts" && isAdmin && (
           <div className="animate-fade-up">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
               <h2 className="gold-gradient-text font-cinzel font-bold text-2xl">Debt Tracking</h2>
-              <Btn variant="amber" onClick={async()=>{await supabase.rpc("check_and_mark_defaulters");await loadData();toast.success("Defaulter check complete!")}}><AlertTriangle size={12}/>Check Defaulters</Btn>
+              <div className="flex gap-2">
+                <Btn variant="glass" onClick={async()=>{await loadData();toast.success("Debt tracker updated!")}}><RefreshCw size={12}/>UPDATE DEBT TRACKER</Btn>
+                <Btn variant="amber" onClick={async()=>{await supabase.rpc("check_and_mark_defaulters");await loadData();toast.success("Defaulter check complete!")}}><AlertTriangle size={12}/>Check Defaulters</Btn>
+              </div>
             </div>
             <div className="glass-card-static rounded-2xl overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="w-full text-xs"><thead><tr className="border-b border-gold/10 bg-gold/5">{["User","Group","Amount","Description","Date","Status","Actions"].map(h=><th key={h} className="px-3 py-2 text-left text-muted-foreground font-semibold uppercase text-[9px]">{h}</th>)}</tr></thead>
-                <tbody>{debts.length===0?<tr><td colSpan={7} className="text-center py-8 text-muted-foreground">No debts recorded</td></tr>:debts.map((d,i)=>{
-                  const p=d.profiles as Record<string,unknown>|null;
+                <table className="w-full text-xs"><thead><tr className="border-b border-gold/10 bg-gold/5">{["User","Email","Phone","Group","Seats","Unique Code","Amount","Status","Actions"].map(h=><th key={h} className="px-3 py-2 text-left text-muted-foreground font-semibold uppercase text-[9px] whitespace-nowrap">{h}</th>)}</tr></thead>
+                <tbody>{debts.length===0?<tr><td colSpan={9} className="text-center py-8 text-muted-foreground">No debts recorded</td></tr>:debts.map((d,i)=>{
+                  const userProfile = adminUsers.find(u => u.id === d.user_id);
                   return (
-                    <tr key={i} className="border-b border-white/5">
-                      <td className="px-3 py-2">@{p?.username as string}</td>
-                      <td className="px-3 py-2">{d.group_name as string}</td>
+                    <tr key={i} className="border-b border-white/5 hover:bg-white/[0.02]">
+                      <td className="px-3 py-2">{userProfile ? `${userProfile.first_name} ${userProfile.last_name}` : "-"}</td>
+                      <td className="px-3 py-2 text-muted-foreground text-[10px]">{userProfile?.email as string || "-"}</td>
+                      <td className="px-3 py-2 text-muted-foreground text-[10px]">{userProfile?.phone as string || "-"}</td>
+                      <td className="px-3 py-2">{d.group_name as string || groups.find(g=>g.id===d.group_id as string)?.name || "Deleted Group"}</td>
+                      <td className="px-3 py-2 text-gold font-mono">{d.seat_numbers as string || "-"}</td>
+                      <td className="px-3 py-2 text-amber-400 font-mono text-[10px]">{d.unique_code as string || "-"}</td>
                       <td className="px-3 py-2 font-bold text-red-400">₦{Number(d.amount).toLocaleString()}</td>
-                      <td className="px-3 py-2 text-muted-foreground text-[10px]">{d.description as string||"-"}</td>
-                      <td className="px-3 py-2 text-muted-foreground text-[9px]">{new Date(d.created_at as string).toLocaleDateString()}</td>
-                      <td className="px-3 py-2">{d.is_paid?<span className="text-emerald-400 text-[9px] font-bold">Paid</span>:<span className="text-red-400 text-[9px] font-bold">Unpaid</span>}</td>
-                      <td className="px-3 py-2">{!d.is_paid && <Btn variant="green" size="xs" onClick={()=>resolveDebt(d.id as string)}><CheckCircle size={9}/>Resolve</Btn>}</td>
+                      <td className="px-3 py-2"><span className={`px-2 py-0.5 rounded-full text-[9px] font-bold border ${(d.status as string)==="cleared"?"text-emerald-400 border-emerald-600/30 bg-emerald-900/20":"text-red-400 border-red-600/30 bg-red-900/20"}`}>{d.status as string || (d.is_paid?"cleared":"uncleared")}</span></td>
+                      <td className="px-3 py-2">
+                        <div className="flex gap-1 flex-wrap">
+                          {!(d.is_paid) && <Btn variant="green" size="xs" onClick={()=>resolveDebt(d.id as string)}><CheckCircle size={9}/>Clear</Btn>}
+                          {d.is_paid && <Btn variant="amber" size="xs" onClick={async()=>{await supabase.from("user_debts").update({is_paid:false,status:"uncleared"}).eq("id",d.id as string);await loadData()}}><RefreshCw size={9}/>Reopen</Btn>}
+                          <Btn variant="red" size="xs" onClick={async()=>{await supabase.from("user_debts").update({status:"removed",is_paid:true}).eq("id",d.id as string);await loadData()}}><X size={9}/>Remove</Btn>
+                        </div>
+                      </td>
                     </tr>
                   );
                 })}</tbody></table>
@@ -924,8 +937,9 @@ export default function Admin() {
             </div>
             <div className="glass-card-static rounded-2xl p-6 mt-6 space-y-4">
               <h3 className="gold-text font-cinzel font-bold">Send Notification</h3>
-              <select value={notifTarget} onChange={e=>setNotifTarget(e.target.value)} className="luxury-input"><option value="all">All Users</option><option value="vip">VIP Members</option><option value="user">Specific User</option></select>
+              <select value={notifTarget} onChange={e=>setNotifTarget(e.target.value)} className="luxury-input"><option value="all">All Users</option><option value="vip">VIP Members</option><option value="user">Specific User</option><option value="group">Specific Group</option></select>
               {notifTarget==="user"&&<select value={notifUserId} onChange={e=>setNotifUserId(e.target.value)} className="luxury-input"><option value="">-- Select User --</option>{adminUsers.filter(u=>u.role!=="admin").map(u=><option key={u.id as string} value={u.id as string}>@{u.username as string} ({u.first_name as string})</option>)}</select>}
+              {notifTarget==="group"&&<select value={notifGroupId} onChange={e=>setNotifGroupId(e.target.value)} className="luxury-input"><option value="">-- Select Group --</option>{groups.map(g=><option key={g.id} value={g.id}>{g.name}</option>)}</select>}
               <textarea value={notifMsg} onChange={e=>setNotifMsg(e.target.value)} placeholder="Notification message..." className="luxury-input resize-none h-20"/>
               <button onClick={sendNotification} className="btn-gold w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2"><Bell size={14}/>Send Notification</button>
             </div>

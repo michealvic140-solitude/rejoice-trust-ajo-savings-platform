@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, PiggyBank, Shield, Receipt, HeadphonesIcon,
-  Settings, History, Menu, X
+  Settings, History, Menu, X, AlertTriangle
 } from "lucide-react";
 import { useState } from "react";
 
@@ -11,6 +11,7 @@ const NAV = [
   { icon: Shield,          label: "Groups",        to: "/groups" },
   { icon: Receipt,         label: "Transactions",  to: "/transactions" },
   { icon: History,         label: "History",       to: "/history" },
+  { icon: AlertTriangle,   label: "My Debts",      to: "/my-debts" },
   { icon: HeadphonesIcon,  label: "Support",       to: "/support" },
   { icon: Settings,        label: "Settings",      to: "/profile" },
 ];

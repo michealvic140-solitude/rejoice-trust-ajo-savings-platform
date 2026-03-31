@@ -812,11 +812,13 @@ export type Database = {
         Args: never
         Returns: {
           first_name: string
+          groups_joined: number
           id: string
           is_vip: boolean
           last_name: string
           nickname: string
           profile_picture: string
+          role: Database["public"]["Enums"]["app_role"]
           total_paid: number
           trust_score: number
         }[]

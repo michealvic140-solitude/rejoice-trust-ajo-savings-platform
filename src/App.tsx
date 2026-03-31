@@ -22,6 +22,8 @@ import ForgotPassword from "@/pages/ForgotPassword";
 import ResetPassword from "@/pages/ResetPassword";
 import GuideTips from "@/pages/GuideTips";
 import Disbursements from "@/pages/Disbursements";
+import MyDebts from "@/pages/MyDebts";
+import DebtPayments from "@/pages/DebtPayments";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -55,6 +57,8 @@ function AppRoutes() {
       <Route path="/history" element={<History />} />
       <Route path="/guide" element={<GuideTips />} />
       <Route path="/disbursements" element={<Disbursements />} />
+      <Route path="/my-debts" element={<MyDebts />} />
+      <Route path="/debt-payments" element={<DebtPayments />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

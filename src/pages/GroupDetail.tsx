@@ -423,29 +423,34 @@ export default function GroupDetail() {
 
           {/* Members + Chat */}
           <div className="space-y-4">
-            {/* Member List */}
+            {/* Member List Table */}
             <div className="glass-card-static rounded-2xl border border-gold/15 overflow-hidden">
               <div className="px-4 py-3 border-b border-gold/10">
                 <h3 className="gold-text font-cinzel font-bold text-sm flex items-center gap-2"><Users size={14} />Members</h3>
                 <p className="text-muted-foreground text-[10px] mt-0.5">{uniqueMembers.size} users · {claimedSlots.length} seats</p>
               </div>
-              <div className="p-3 space-y-1.5 max-h-64 overflow-y-auto scrollbar-gold">
-                {claimedSlots.length === 0 && <p className="text-muted-foreground text-xs text-center py-4">No members yet</p>}
-                {claimedSlots.sort((a,b)=>a.seatNo-b.seatNo).map(slot => (
-                  <div key={slot.id} className="flex items-center gap-2 p-2 rounded-lg hover:bg-gold/5 transition-colors">
-                    <span className="text-gold text-xs font-mono font-bold w-8 shrink-0">S{slot.seatNo}</span>
-                    {slot.profilePicture ? <img src={slot.profilePicture} className="w-7 h-7 rounded-full object-cover border border-gold/20 shrink-0" alt="" /> : <div className="w-7 h-7 rounded-full bg-gold-gradient flex items-center justify-center text-obsidian text-xs font-bold shrink-0">{slot.nickname?.[0] || slot.fullName?.[0] || "?"}</div>}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-foreground text-xs truncate">{slot.nickname || slot.fullName || "Member"}</p>
-                      <div className="flex items-center gap-1">
-                        {slot.isVip && <span className="vip-badge text-[8px]">VIP</span>}
-                        <span className={`text-[8px] px-1 rounded ${(slot.status as unknown as string) === "mine" || (slot.status as unknown as string) === "claimed" ? "text-emerald-400" : "text-orange-400"}`}>
-                          {(slot.status as unknown as string) === "mine" ? "claimed" : slot.status}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+              <div className="max-h-72 overflow-y-auto scrollbar-gold overflow-x-auto">
+                {claimedSlots.length === 0 ? <p className="text-muted-foreground text-xs text-center py-4">No members yet</p> : (
+                  <table className="w-full text-[10px]">
+                    <thead><tr className="border-b border-gold/10 bg-gold/5">
+                      {["Seat", "Nickname", "VIP", "Status"].map(h => <th key={h} className="px-2 py-1.5 text-left text-muted-foreground font-semibold uppercase text-[8px]">{h}</th>)}
+                    </tr></thead>
+                    <tbody>
+                      {claimedSlots.sort((a,b)=>a.seatNo-b.seatNo).map(slot => (
+                        <tr key={slot.id} className="border-b border-white/5 hover:bg-gold/5">
+                          <td className="px-2 py-1.5 text-gold font-mono font-bold">S{slot.seatNo}</td>
+                          <td className="px-2 py-1.5">{slot.nickname || slot.fullName || "Member"}</td>
+                          <td className="px-2 py-1.5">{slot.isVip ? <span className="vip-badge text-[7px]">VIP</span> : "-"}</td>
+                          <td className="px-2 py-1.5">
+                            <span className={`text-[8px] px-1 rounded ${(slot.status as unknown as string) === "mine" || (slot.status as unknown as string) === "claimed" ? "text-emerald-400" : "text-orange-400"}`}>
+                              {(slot.status as unknown as string) === "mine" ? "claimed" : slot.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
               </div>
             </div>
 

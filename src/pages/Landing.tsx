@@ -282,28 +282,34 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* LEADERBOARD */}
+      {/* LEADERBOARD TABLE */}
       {leaderboard.length > 0 && (
         <section className="py-20 px-4">
-          <div className="max-w-3xl mx-auto">
+          <div className="max-w-5xl mx-auto">
             <div className="text-center mb-10">
               <h2 className="gold-gradient-text text-3xl font-cinzel font-bold">Top Contributors</h2>
             </div>
             <div className="glass-card-static rounded-2xl overflow-hidden">
-              {leaderboard.slice(0, 10).map((u, i) => (
-                <div key={`${u.id}-${i}`} className="flex items-center gap-4 px-6 py-4 border-b border-gold/10 last:border-0 hover:bg-gold/5 transition-colors">
-                  <span className={`w-8 h-8 rounded-full flex items-center justify-center font-cinzel font-black text-sm shrink-0 ${i === 0 ? "bg-gold text-obsidian" : i === 1 ? "bg-muted text-foreground" : i === 2 ? "bg-amber-800/40 text-amber-400" : "bg-muted/30 text-muted-foreground"}`}>{i + 1}</span>
-                  {u.profilePicture ? <img src={u.profilePicture} alt="" className="w-9 h-9 rounded-full object-cover border border-gold/20 shrink-0" /> : <div className="w-9 h-9 rounded-full bg-gold-gradient flex items-center justify-center text-obsidian font-bold text-sm shrink-0">{u.firstName?.[0] || "?"}</div>}
-                  <div className="flex-1">
-                    <p className="text-foreground font-semibold text-sm">{u.nickname || u.firstName}</p>
-                    {u.isVip && <span className="vip-badge text-[9px]">VIP ✦</span>}
-                  </div>
-                  <div className="text-right">
-                    <p className="text-gold font-bold text-sm font-cinzel">{u.trustScore}★</p>
-                    <p className="text-muted-foreground text-xs">₦{u.totalPaid.toLocaleString()}</p>
-                  </div>
-                </div>
-              ))}
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead><tr className="border-b border-gold/10 bg-gold/5">
+                    {["#", "Trust Score", "Nickname", "VIP", "Total Money", "Groups Joined", "Role"].map(h => <th key={h} className="px-3 py-2 text-left text-muted-foreground font-semibold uppercase text-[9px] whitespace-nowrap">{h}</th>)}
+                  </tr></thead>
+                  <tbody>
+                    {leaderboard.slice(0, 20).map((u, i) => (
+                      <tr key={`${u.id}-${i}`} className="border-b border-white/5 hover:bg-gold/5 transition-colors">
+                        <td className="px-3 py-2"><span className={`w-6 h-6 rounded-full flex items-center justify-center font-cinzel font-black text-[10px] ${i===0?"bg-gold text-obsidian":i===1?"bg-muted text-foreground":i===2?"bg-amber-800/40 text-amber-400":"bg-muted/30 text-muted-foreground"}`}>{i+1}</span></td>
+                        <td className="px-3 py-2 text-gold font-bold">{u.trustScore}★</td>
+                        <td className="px-3 py-2 font-semibold">{u.nickname || u.firstName}</td>
+                        <td className="px-3 py-2">{u.isVip ? <span className="vip-badge text-[8px]">VIP ✦</span> : "-"}</td>
+                        <td className="px-3 py-2 text-emerald-400 font-bold">₦{u.totalPaid.toLocaleString()}</td>
+                        <td className="px-3 py-2 text-muted-foreground">{(u as any).groupsJoined ?? "-"}</td>
+                        <td className="px-3 py-2 capitalize text-muted-foreground">{(u as any).role || "user"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </section>
