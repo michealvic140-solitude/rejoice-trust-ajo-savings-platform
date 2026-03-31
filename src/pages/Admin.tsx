@@ -52,7 +52,7 @@ export default function Admin() {
   const [supportReplyText, setSupportReplyText] = useState(""); const [supportReplyFile, setSupportReplyFile] = useState<File|null>(null);
   const [gName, setGName] = useState(""); const [gDesc, setGDesc] = useState(""); const [gAmt, setGAmt] = useState(""); const [gCycle, setGCycle] = useState("daily"); const [gSlots, setGSlots] = useState("100"); const [gBank, setGBank] = useState(""); const [gAccNum, setGAccNum] = useState(""); const [gAccName, setGAccName] = useState(""); const [editingGroup, setEditingGroup] = useState<string|null>(null);
   const [gPayoutAmt, setGPayoutAmt] = useState(""); const [gPayFreq, setGPayFreq] = useState("daily"); const [gPayDays, setGPayDays] = useState("1"); const [gDisbDays, setGDisbDays] = useState("30");
-  const [notifTarget, setNotifTarget] = useState("all"); const [notifMsg, setNotifMsg] = useState(""); const [notifUserId, setNotifUserId] = useState("");
+  const [notifTarget, setNotifTarget] = useState("all"); const [notifMsg, setNotifMsg] = useState(""); const [notifUserId, setNotifUserId] = useState(""); const [notifGroupId, setNotifGroupId] = useState("");
   const [editedUser, setEditedUser] = useState<Record<string,string>>({});
   const [termContent, setTermContent] = useState(""); const [termSaving, setTermSaving] = useState(false);
   const [editContact, setEditContact] = useState({ ...contactInfo });
