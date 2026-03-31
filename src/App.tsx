@@ -57,6 +57,8 @@ function AppRoutes() {
       <Route path="/history" element={<History />} />
       <Route path="/guide" element={<GuideTips />} />
       <Route path="/disbursements" element={<Disbursements />} />
+      <Route path="/my-debts" element={<MyDebts />} />
+      <Route path="/debt-payments" element={<DebtPayments />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
