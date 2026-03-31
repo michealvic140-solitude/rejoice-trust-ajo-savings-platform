@@ -29,7 +29,7 @@ export default function DebtPayments() {
   const [bankAccName, setBankAccName] = useState("");
 
   const loadData = useCallback(async () => {
-    const { data } = await supabase.from("debt_payments").select("*").order("created_at", { ascending: false });
+    const { data } = await (supabase as any).from("debt_payments").select("*").order("created_at", { ascending: false });
     if (data) setPayments(data as unknown as DebtPayment[]);
     const { data: bankData } = await supabase.from("platform_settings").select("value").eq("key", "debt_bank_details").single();
     if (bankData) {
