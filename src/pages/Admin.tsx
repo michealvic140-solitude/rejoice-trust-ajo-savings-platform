@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Announcement } from "@/context/AppContext";
 import { toast } from "sonner";
 
-type SideTab = "overview"|"users"|"groups"|"payments"|"announcements"|"support"|"contact-info"|"seat-changes"|"exit-requests"|"audit"|"terms"|"disbursements"|"members"|"debts";
+type SideTab = "overview"|"users"|"groups"|"payments"|"announcements"|"support"|"contact-info"|"seat-changes"|"exit-requests"|"audit"|"terms"|"disbursements"|"members"|"debts"|"debt-payments";
 
 const Btn = ({ onClick, children, variant="glass", size="sm", className="", disabled=false }: { onClick?:()=>void; children:React.ReactNode; variant?:"glass"|"gold"|"red"|"green"|"blue"|"amber"; size?:"xs"|"sm"; className?:string; disabled?:boolean; }) => {
   const base="inline-flex items-center gap-1 font-semibold rounded-lg transition-all cursor-pointer border disabled:opacity-50";
