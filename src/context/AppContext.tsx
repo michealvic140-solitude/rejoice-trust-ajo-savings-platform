@@ -277,7 +277,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           lastName: u.last_name as string,
           email: "",
           phone: "",
-          role: "user" as UserRole,
+          role: (u.role as UserRole) || "user",
           isVip: Boolean(u.is_vip),
           isRestricted: false,
           isBanned: false,
@@ -288,7 +288,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
           trustScore: Number(u.trust_score) || 50,
           activeSlots: 0,
           unreadNotifications: 0,
-        })));
+          groupsJoined: Number(u.groups_joined) || 0,
+        } as User & { groupsJoined: number })));
       }
     } catch {}
   }, []);
