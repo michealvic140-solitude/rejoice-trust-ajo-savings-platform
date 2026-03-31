@@ -74,7 +74,7 @@ export default function DebtPayments() {
 
   const declineDebtPayment = async (paymentId: string, userId: string) => {
     const reason = prompt("Reason for declining:");
-    await supabase.from("debt_payments").update({ status: "declined", declined_reason: reason || null }).eq("id", paymentId);
+    await (supabase as any).from("debt_payments").update({ status: "declined", declined_reason: reason || null }).eq("id", paymentId);
     await supabase.rpc("send_notification_to_user", { p_user_id: userId, p_message: `Your debt payment was declined.${reason ? ` Reason: ${reason}` : ""}` });
     await loadData();
   };

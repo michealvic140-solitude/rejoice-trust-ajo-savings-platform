@@ -65,7 +65,7 @@ export default function MyDebts() {
         const { data: up } = await supabase.storage.from("uploads").upload(path, payProof);
         if (up) { const { data: u } = supabase.storage.from("uploads").getPublicUrl(up.path); screenshotUrl = u.publicUrl; }
       }
-      await supabase.from("debt_payments").insert({
+      await (supabase as any).from("debt_payments").insert({
         user_id: currentUser.id,
         seat_numbers: paySeats,
         unique_codes: payCode,
