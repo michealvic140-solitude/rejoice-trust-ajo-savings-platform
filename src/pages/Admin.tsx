@@ -424,6 +424,7 @@ export default function Admin() {
     {id:"payments",icon:FileText,label:"Payments",adminOnly:true},
     {id:"disbursements",icon:DollarSign,label:"Disbursements",adminOnly:true},
     {id:"debts",icon:AlertTriangle,label:"Debt Tracking",adminOnly:true},
+    {id:"debt-payments",icon:DollarSign,label:"Debt Payments",adminOnly:true},
     {id:"announcements",icon:Megaphone,label:"Announcements"},
     {id:"support",icon:Bell,label:"Support"},
     {id:"contact-info",icon:Phone,label:"Contact Info",adminOnly:true},
