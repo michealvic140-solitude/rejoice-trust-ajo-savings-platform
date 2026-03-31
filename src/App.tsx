@@ -22,6 +22,8 @@ import ForgotPassword from "@/pages/ForgotPassword";
 import ResetPassword from "@/pages/ResetPassword";
 import GuideTips from "@/pages/GuideTips";
 import Disbursements from "@/pages/Disbursements";
+import MyDebts from "@/pages/MyDebts";
+import DebtPayments from "@/pages/DebtPayments";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
