@@ -66,7 +66,7 @@ export default function DebtPayments() {
   };
 
   const approveDebtPayment = async (paymentId: string, userId: string) => {
-    await supabase.from("debt_payments").update({ status: "approved" }).eq("id", paymentId);
+    await (supabase as any).from("debt_payments").update({ status: "approved" }).eq("id", paymentId);
     await supabase.rpc("send_notification_to_user", { p_user_id: userId, p_message: "Your debt payment has been approved! ✅" });
     await supabase.from("audit_logs").insert({ admin_id: currentUser!.id, admin_name: currentUser!.username, user_id: userId, action: `Approved debt payment ${paymentId}`, type: "debt" });
     await loadData();
