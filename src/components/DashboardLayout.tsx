@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, PiggyBank, Shield, Receipt, HeadphonesIcon,
-  Settings, History, Menu, X
+  Settings, History, Menu, X, AlertTriangle
 } from "lucide-react";
 import { useState } from "react";
 
