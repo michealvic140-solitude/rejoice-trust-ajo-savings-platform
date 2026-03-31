@@ -710,24 +710,35 @@ export default function Admin() {
         {/* ── DEBTS ── */}
         {sideTab === "debts" && isAdmin && (
           <div className="animate-fade-up">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
               <h2 className="gold-gradient-text font-cinzel font-bold text-2xl">Debt Tracking</h2>
-              <Btn variant="amber" onClick={async()=>{await supabase.rpc("check_and_mark_defaulters");await loadData();toast.success("Defaulter check complete!")}}><AlertTriangle size={12}/>Check Defaulters</Btn>
+              <div className="flex gap-2">
+                <Btn variant="glass" onClick={async()=>{await loadData();toast.success("Debt tracker updated!")}}><RefreshCw size={12}/>UPDATE DEBT TRACKER</Btn>
+                <Btn variant="amber" onClick={async()=>{await supabase.rpc("check_and_mark_defaulters");await loadData();toast.success("Defaulter check complete!")}}><AlertTriangle size={12}/>Check Defaulters</Btn>
+              </div>
             </div>
             <div className="glass-card-static rounded-2xl overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="w-full text-xs"><thead><tr className="border-b border-gold/10 bg-gold/5">{["User","Group","Amount","Description","Date","Status","Actions"].map(h=><th key={h} className="px-3 py-2 text-left text-muted-foreground font-semibold uppercase text-[9px]">{h}</th>)}</tr></thead>
-                <tbody>{debts.length===0?<tr><td colSpan={7} className="text-center py-8 text-muted-foreground">No debts recorded</td></tr>:debts.map((d,i)=>{
-                  const p=d.profiles as Record<string,unknown>|null;
+                <table className="w-full text-xs"><thead><tr className="border-b border-gold/10 bg-gold/5">{["User","Email","Phone","Group","Seats","Unique Code","Amount","Status","Actions"].map(h=><th key={h} className="px-3 py-2 text-left text-muted-foreground font-semibold uppercase text-[9px] whitespace-nowrap">{h}</th>)}</tr></thead>
+                <tbody>{debts.length===0?<tr><td colSpan={9} className="text-center py-8 text-muted-foreground">No debts recorded</td></tr>:debts.map((d,i)=>{
+                  const userProfile = adminUsers.find(u => u.id === d.user_id);
                   return (
-                    <tr key={i} className="border-b border-white/5">
-                      <td className="px-3 py-2">@{p?.username as string}</td>
-                      <td className="px-3 py-2">{d.group_name as string}</td>
+                    <tr key={i} className="border-b border-white/5 hover:bg-white/[0.02]">
+                      <td className="px-3 py-2">{userProfile ? `${userProfile.first_name} ${userProfile.last_name}` : "-"}</td>
+                      <td className="px-3 py-2 text-muted-foreground text-[10px]">{userProfile?.email as string || "-"}</td>
+                      <td className="px-3 py-2 text-muted-foreground text-[10px]">{userProfile?.phone as string || "-"}</td>
+                      <td className="px-3 py-2">{d.group_name as string || groups.find(g=>g.id===d.group_id as string)?.name || "Deleted Group"}</td>
+                      <td className="px-3 py-2 text-gold font-mono">{d.seat_numbers as string || "-"}</td>
+                      <td className="px-3 py-2 text-amber-400 font-mono text-[10px]">{d.unique_code as string || "-"}</td>
                       <td className="px-3 py-2 font-bold text-red-400">₦{Number(d.amount).toLocaleString()}</td>
-                      <td className="px-3 py-2 text-muted-foreground text-[10px]">{d.description as string||"-"}</td>
-                      <td className="px-3 py-2 text-muted-foreground text-[9px]">{new Date(d.created_at as string).toLocaleDateString()}</td>
-                      <td className="px-3 py-2">{d.is_paid?<span className="text-emerald-400 text-[9px] font-bold">Paid</span>:<span className="text-red-400 text-[9px] font-bold">Unpaid</span>}</td>
-                      <td className="px-3 py-2">{!d.is_paid && <Btn variant="green" size="xs" onClick={()=>resolveDebt(d.id as string)}><CheckCircle size={9}/>Resolve</Btn>}</td>
+                      <td className="px-3 py-2"><span className={`px-2 py-0.5 rounded-full text-[9px] font-bold border ${(d.status as string)==="cleared"?"text-emerald-400 border-emerald-600/30 bg-emerald-900/20":"text-red-400 border-red-600/30 bg-red-900/20"}`}>{d.status as string || (d.is_paid?"cleared":"uncleared")}</span></td>
+                      <td className="px-3 py-2">
+                        <div className="flex gap-1 flex-wrap">
+                          {!(d.is_paid) && <Btn variant="green" size="xs" onClick={()=>resolveDebt(d.id as string)}><CheckCircle size={9}/>Clear</Btn>}
+                          {d.is_paid && <Btn variant="amber" size="xs" onClick={async()=>{await supabase.from("user_debts").update({is_paid:false,status:"uncleared"}).eq("id",d.id as string);await loadData()}}><RefreshCw size={9}/>Reopen</Btn>}
+                          <Btn variant="red" size="xs" onClick={async()=>{await supabase.from("user_debts").update({status:"removed",is_paid:true}).eq("id",d.id as string);await loadData()}}><X size={9}/>Remove</Btn>
+                        </div>
+                      </td>
                     </tr>
                   );
                 })}</tbody></table>
