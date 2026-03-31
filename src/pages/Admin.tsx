@@ -926,8 +926,9 @@ export default function Admin() {
             </div>
             <div className="glass-card-static rounded-2xl p-6 mt-6 space-y-4">
               <h3 className="gold-text font-cinzel font-bold">Send Notification</h3>
-              <select value={notifTarget} onChange={e=>setNotifTarget(e.target.value)} className="luxury-input"><option value="all">All Users</option><option value="vip">VIP Members</option><option value="user">Specific User</option></select>
+              <select value={notifTarget} onChange={e=>setNotifTarget(e.target.value)} className="luxury-input"><option value="all">All Users</option><option value="vip">VIP Members</option><option value="user">Specific User</option><option value="group">Specific Group</option></select>
               {notifTarget==="user"&&<select value={notifUserId} onChange={e=>setNotifUserId(e.target.value)} className="luxury-input"><option value="">-- Select User --</option>{adminUsers.filter(u=>u.role!=="admin").map(u=><option key={u.id as string} value={u.id as string}>@{u.username as string} ({u.first_name as string})</option>)}</select>}
+              {notifTarget==="group"&&<select value={notifGroupId} onChange={e=>setNotifGroupId(e.target.value)} className="luxury-input"><option value="">-- Select Group --</option>{groups.map(g=><option key={g.id} value={g.id}>{g.name}</option>)}</select>}
               <textarea value={notifMsg} onChange={e=>setNotifMsg(e.target.value)} placeholder="Notification message..." className="luxury-input resize-none h-20"/>
               <button onClick={sendNotification} className="btn-gold w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2"><Bell size={14}/>Send Notification</button>
             </div>
