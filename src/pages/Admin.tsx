@@ -231,8 +231,9 @@ export default function Admin() {
     if (!notifMsg) return;
     if (notifTarget === "all") await supabase.rpc("send_notification_to_all", { p_message: notifMsg });
     else if (notifTarget === "user" && notifUserId) await supabase.rpc("send_notification_to_user", { p_user_id: notifUserId, p_message: notifMsg });
+    else if (notifTarget === "group" && notifGroupId) await supabase.rpc("send_notification_to_group", { p_group_id: notifGroupId, p_message: notifMsg });
     else if (notifTarget === "vip") { const vips = adminUsers.filter(u => u.is_vip); for (const u of vips) await supabase.rpc("send_notification_to_user", { p_user_id: u.id as string, p_message: notifMsg }); }
-    setNotifMsg(""); setNotifUserId(""); toast.success("Notification sent!");
+    setNotifMsg(""); setNotifUserId(""); setNotifGroupId(""); toast.success("Notification sent!");
   };
 
   const banUser = async (userId: string) => {
